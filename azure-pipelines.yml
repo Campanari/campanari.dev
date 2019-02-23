@@ -1,0 +1,21 @@
+trigger:
+- master
+
+pr: none
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+variables:
+  buildConfiguration: 'Release'
+  imageName: 'campanari.dev'
+
+steps:
+- script: |
+    dotnet publish --configuration $(buildConfiguration) --output out
+    docker build -f Dockerfile -t $(docker.Id)/$(imageName):$(Build.BuildId) -t $(docker.Id)/$(imageName):latest .
+    docker login -u $(docker.Id) -p $pswd
+    docker push $(docker.Id)/$(imageName):$(Build.BuildId)
+    docker push $(docker.Id)/$(imageName):latest
+  env:
+    pswd: $(docker.Password)
